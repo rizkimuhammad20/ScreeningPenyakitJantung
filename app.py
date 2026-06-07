@@ -180,7 +180,7 @@ st.markdown("""
 
 # Metrics
 col1, col2, col3 = st.columns(3)
-col1.metric("Model Type", "Random Forest")
+col1.metric("Model Type", "Logistic Regression")
 col2.metric("Decision Threshold", f"{threshold:.2f}")
 col3.metric("Prediction Target", "Heart Disease")
 
