@@ -173,8 +173,8 @@ GEN_MAP = {1: "Sangat Baik", 2: "Baik", 3: "Sedang", 4: "Buruk", 5: "Sangat Buru
 # ==================================================
 st.markdown("""
 <div class="hero-card">
-    <div class="hero-title">❤️ Heart Disease Risk Advisor</div>
-    <div class="hero-subtitle">Sistem deteksi dini risiko penyakit jantung berbasis Machine Learning.</div>
+    <div class="hero-title">❤️ Deteksi Dini Risiko Penyakit Jantung</div>
+    <div class="hero-subtitle">Sistem deteksi dini risiko penyakit jantung berdasarkan gaya hidup dan riwayat kesehatan berbasis Machine Learning.</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -190,21 +190,23 @@ st.markdown("<br>", unsafe_allow_html=True)
 # FORM INPUT
 # ==================================================
 with st.form("heart_health_form"):
-    st.subheader("📝 Lengkapi Data Kesehatan")
+    st.subheader("📝 Lengkapi Data Kesehatan & Gaya Hidup")
     c1, c2 = st.columns(2)
     with c1:
         age = st.selectbox("Rentang Usia", options=list(AGE_MAP.keys()), format_func=lambda x: AGE_MAP[x])
         sex = st.selectbox("Jenis Kelamin", [0, 1], format_func=lambda x: "Wanita" if x == 0 else "Pria")
-        education = st.selectbox("Pendidikan Terakhir", options=list(EDU_MAP.keys()), format_func=lambda x: EDU_MAP[x])
-        income = st.selectbox("Pendapatan Tahunan", options=list(INC_MAP.keys()), format_func=lambda x: INC_MAP[x])
         bmi = st.number_input("Body Mass Index (BMI)", min_value=10.0, max_value=99.0, value=24.5, step=0.1)
+        fruits = st.selectbox("Konsumsi Buah", [1, 0], format_func=lambda x: "Ya (Minimal 1x sehari)" if x == 1 else "Tidak Rutin")
+        veggies = st.selectbox("Konsumsi Sayuran", [1, 0], format_func=lambda x: "Ya (Minimal 1x sehari)" if x == 1 else "Tidak Rutin")
+        phys_activity = st.selectbox("Rutin Berolahraga", [1, 0], format_func=lambda x: "Ya (Dalam 30 hari terakhir)" if x == 1 else "Tidak")
     
     with c2:
         high_bp = st.selectbox("Riwayat Darah Tinggi", [0, 1], format_func=lambda x: "Tidak" if x == 0 else "Ya")
         high_chol = st.selectbox("Riwayat Kolesterol Tinggi", [0, 1], format_func=lambda x: "Tidak" if x == 0 else "Ya")
         diabetes = st.selectbox("Riwayat Diabetes", options=list(DIAB_MAP.keys()), format_func=lambda x: DIAB_MAP[x])
-        gen_hlth = st.selectbox("Kondisi Kesehatan Umum", options=list(GEN_MAP.keys()), format_func=lambda x: GEN_MAP[x])
+        stroke = st.selectbox("Riwayat Stroke", [0, 1], format_func=lambda x: "Tidak Pernah" if x == 0 else "Pernah")
         smoker = st.selectbox("Perokok", [0, 1], format_func=lambda x: "Tidak" if x == 0 else "Ya")
+        alcohol = st.selectbox("Konsumsi Alkohol Berat", [0, 1], format_func=lambda x: "Ya (Pria >2x/hari, Wanita >1x/hari)" if x == 1 else "Tidak/Wajar")
 
     submit = st.form_submit_button("🔍 Analisis Risiko Sekarang", use_container_width=True)
 
@@ -212,14 +214,28 @@ with st.form("heart_health_form"):
 # PREDICTION ENGINE
 # ==================================================
 if submit:
-    # Logika yang sama seperti sebelumnya...
     input_data = pd.DataFrame([{
-        'HighBP': high_bp, 'HighChol': high_chol, 'CholCheck': 1, 'BMI': bmi,
-        'Smoker': smoker, 'Stroke': 0, 'Diabetes': diabetes, 'PhysActivity': 1,
-        'Fruits': 1, 'Veggies': 1, 'HvyAlcoholConsump': 0,
-        'AnyHealthcare': 1, 'NoDocbcCost': 0, 'GenHlth': gen_hlth,
-        'MentHlth': 0, 'PhysHlth': 0, 'DiffWalk': 0,
-        'Sex': sex, 'Age': age, 'Education': education, 'Income': income
+        'HighBP': high_bp, 
+        'HighChol': high_chol, 
+        'CholCheck': 1, 
+        'BMI': bmi,
+        'Smoker': smoker, 
+        'Stroke': stroke,           # Menggunakan variabel input dari form
+        'Diabetes': diabetes, 
+        'PhysActivity': phys_activity, # Menggunakan variabel input dari form
+        'Fruits': fruits, 
+        'Veggies': veggies, 
+        'HvyAlcoholConsump': alcohol, 
+        'AnyHealthcare': 1, 
+        'NoDocbcCost': 0, 
+        'GenHlth': 3,   # Nilai default/placeholder (Skala 1-5, 3 = Cukup/Sedang) agar pipeline tidak eror
+        'MentHlth': 0, 
+        'PhysHlth': 0, 
+        'DiffWalk': 0,
+        'Sex': sex, 
+        'Age': age, 
+        'Education': 4, # Nilai default/placeholder agar pipeline tidak eror
+        'Income': 5     # Nilai default/placeholder agar pipeline tidak eror
     }])
 
     # Preprocessing
